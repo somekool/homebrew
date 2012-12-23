@@ -6,6 +6,19 @@
     <meta name="dc.creator" content="Rémi Prévost - http://exomel.com" />
     <link rel="stylesheet" href="./css/screen.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="./css/fonts/chunkfive/chunkfive.css" type="text/css" media="screen" />
+    <script type="text/javascript">
+        function selectText() {
+            if (document.selection) {
+                var range = document.body.createTextRange();
+                range.moveToElementText(document.getElementById('selectable'));
+                range.select();
+            } else if (window.getSelection) {
+                var range = document.createRange();
+                range.selectNode(document.getElementById('selectable'));
+                window.getSelection().addRange(range);
+            }
+        }
+    </script>
   </head>
   <body>
     <div id="wrap">
@@ -19,7 +32,7 @@
           <li>
             <div class="group row">
               <div class="col-1">
-                <p>Homebrew is the easiest and most flexible way to install the UNIX tools Apple didn't include with OS X.</p>
+                <p>Homebrew installs the stuff you need that Apple didn’t.</p>
               </div>
               <div class="col-2">
                 <pre><code><span style="color: #e3d796;">$</span> brew install wget</code></pre>
@@ -29,7 +42,7 @@
           <li>
             <div class="group row">
               <div class="col-1">
-                <p>Homebrew installs packages into their own isolated prefix and then symlinks everything into <code>/usr/local</code>.</p>
+                <p>Homebrew installs packages to their own directory and then symlinks their files into <code>/usr/local</code>.</p>
               </div>
               <div class="col-2">
                 <pre><code><span style="color: #e3d796;">$</span> cd /usr/local
@@ -47,28 +60,26 @@ bin/wget -&gt; ../Cellar/wget/1.12/bin/wget</code></pre>
           <li>
             <div class="group row">
               <div class="col-1">
-                <p>Homebrew is self-contained and unintrusive. </p>
-              </div>
-              <div class="col-2">
-                <p class="button"><a href="http://wiki.github.com/mxcl/homebrew/installation">Install Homebrew Today!</a></p>
+                <p>Homebrew won’t install files outside its prefix, and you can place a Homebrew installation wherever you like.</p>
               </div>
             </div>
           </li>
           <li>
             <div class="group row">
               <div class="col-1">
-                <p>Create your own Homebrew packages in seconds.</p>
+                <p>Trivially create your own Homebrew packages.</p>
               </div>
               <div class="col-2">
                 <pre><code><span style="color: #e3d796;">$</span> brew create http://foo.com/bar-1.0.tgz
-Created /usr/local/Library/Formula/foo.rb</code></pre>
+Created /usr/local/Library/Formula/bar.rb
+</code></pre>
               </div>
             </div>
           </li>
           <li>
             <div class="group row">
               <div class="col-1">
-                <p>Homebrew has a Git foundation, so enjoy version control on your brewing customizations and easily merge upstream updates. </p>
+                <p>It's all git and ruby underneath, so hack away with the knowledge that you can easily revert your modifications and merge upstream updates.</p>
               </div>
               <div class="col-2">
                 <pre><code><span style="color: #e3d796;">$</span> brew edit wget <span style="color: #666;"># opens in $EDITOR!</span></code></pre>
@@ -99,25 +110,33 @@ Created /usr/local/Library/Formula/foo.rb</code></pre>
           <li>
             <div class="group row">
               <div class="col-1">
-                <p>Homebrew compliments OS X. Install your gems with <code>gem</code>, and their dependencies with <code>brew</code>.</p>
+                <p>Homebrew complements OS X. Install your gems with <code>gem</code>, and their dependencies with <code>brew</code>.</p>
               </div>
             </div>
           </li>
+
           <li>
-            <div class="row group button button-large">
-              <p><a href="http://wiki.github.com/mxcl/homebrew">Please! Oh please teach me more!</a></p>
+            <div class="group row">
+              <h2>Install Homebrew</h2>
+              <pre style='clear:both;text-align:center;margin:0 -3em;margin-bottom:0.9em'><code id='selectable' onclick="selectText()">ruby -e &quot;$(curl -fsSkL https://raw.github.com/mxcl/homebrew/go)&quot;</code></pre>
+              <div class="col-1">
+                <p>Paste that at a Terminal prompt.</p>
+              </div>
+              <div class="col-2">
+                <p>The script explains what it will do and then pauses before it does it. There are more installation options <a href='https://github.com/mxcl/homebrew/wiki/Installation'>here</a>.
+              </div>
             </div>
           </li>
+
           <li>
-            <div class="group row quote">
-              <blockquote>
-                <span>“</span>
-                Homebrew is the bee’s knees, friends. So far it’s a perfect replacement for MacPorts.
-                <span>”</span>
-              </blockquote>
-              <cite>— <a href="http://twitter.com/thillerson/status/6688848379">@thillerson</a></cite>
+            <div class="group row">
+              <h2>Further Documentation</h2>
+              <div class="button">
+                <p><a href="https://github.com/mxcl/homebrew/wiki">Homebrew Wiki</a></p>
+              </div>
             </div>
           </li>
+
           <li>
             <div class="group row credits">
               <p>Original code by <a href="http://methylblue.com/">Max Howell</a>. Website by <a href="http://exomel.com">Rémi Prévost</a>.</p>
