@@ -2,9 +2,9 @@ require 'formula'
 
 class Root < Formula
   homepage 'http://root.cern.ch'
-  url 'ftp://root.cern.ch/root/root_v5.34.05.source.tar.gz'
-  version '5.34.05'
-  sha1 'fbe19bb0fc7559cbd69c34c4ab2c4bfb150bac13'
+  url 'ftp://root.cern.ch/root/root_v5.34.08.source.tar.gz'
+  version '5.34.08'
+  sha1 '23ca250f9c66797972f94bb8f20d04cf455d6c53'
 
   depends_on 'fftw' => :optional
   depends_on :x11
@@ -23,6 +23,7 @@ class Root < Formula
     system "./configure",
            "#{arch}",
            "--all",
+           "--enable-builtin-glew",
            "--prefix=#{prefix}",
            "--etcdir=#{prefix}/etc/root",
            "--mandir=#{man}"

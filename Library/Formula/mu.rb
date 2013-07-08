@@ -3,21 +3,11 @@ require 'formula'
 class Emacs23Installed < Requirement
   fatal true
   env :userpaths
+  default_formula 'emacs'
 
   satisfy do
     `emacs --version 2>/dev/null` =~ /^GNU Emacs (\d{2})/
     $1.to_i >= 23
-  end
-
-  def message; <<-EOS.undent
-    Emacs 23 or greater is required to build this software.
-
-    You can install this with Homebrew:
-      brew install emacs
-
-    Or you can use any other Emacs distribution
-    that provides version 23 or greater.
-    EOS
   end
 end
 
@@ -35,17 +25,19 @@ class Mu < Formula
   depends_on 'glib'
   depends_on 'gmime'
   depends_on 'xapian'
-  depends_on Emacs23Installed if build.include? 'with-emacs'
+  depends_on Emacs23Installed if build.with? 'emacs'
 
   if build.head?
     depends_on 'automake' => :build
     depends_on 'libtool' => :build
   end
 
+  env :std if build.with? 'emacs'
+
   def install
     # Explicitly tell the build not to include emacs support as the version
     # shipped by default with Mac OS X is too old.
-    ENV['EMACS'] = 'no' unless build.include? 'with-emacs'
+    ENV['EMACS'] = 'no' unless build.with? 'emacs'
 
     system 'autoreconf', '-ivf' if build.head?
     system "./configure", "--disable-dependency-tracking",

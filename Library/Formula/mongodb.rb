@@ -1,27 +1,18 @@
 require 'formula'
 
-class SixtyFourBitRequired < Requirement
-  fatal true
-
-  satisfy MacOS.prefer_64_bit?
-
-  def message; <<-EOS.undent
-    32-bit MongoDB binaries are no longer available.
-
-    If you need to run a 32-bit version of MongoDB, you can
-    compile the server from source:
-      http://www.mongodb.org/display/DOCS/Building+for+OS+X
-    EOS
-  end
-end
-
 class Mongodb < Formula
   homepage 'http://www.mongodb.org/'
-  url 'http://fastdl.mongodb.org/osx/mongodb-osx-x86_64-2.4.1.tgz'
-  sha1 'd11220cdaf5e8edb88b7b4cc0828ffa6149dd7b5'
-  version '2.4.1-x86_64'
+  url 'http://fastdl.mongodb.org/osx/mongodb-osx-x86_64-2.4.4.tgz'
+  sha1 'd9abc5c3aa6e7c6c29bc7b4a15028091931ec7bb'
+  version '2.4.4-x86_64'
 
-  depends_on SixtyFourBitRequired
+  devel do
+    url 'http://fastdl.mongodb.org/osx/mongodb-osx-x86_64-2.5.0.tgz'
+    sha1 '158335b4b2b8d53c8c6bd4f4d81c733e492f8339'
+    version '2.5.0-x86_64'
+  end
+
+  depends_on :arch => :x86_64
 
   def install
     # Copy the prebuilt binaries to prefix
@@ -39,7 +30,9 @@ class Mongodb < Formula
     mv bin/'mongod', prefix
     (bin/'mongod').write <<-EOS.undent
       #!/usr/bin/env ruby
-      ARGV << '--config' << '#{etc}/mongod.conf' unless ARGV.find { |arg| arg =~ /\-\-config/ }
+      ARGV << '--config' << '#{etc}/mongod.conf' unless ARGV.find { |arg|
+        arg =~ /^\s*\-\-config$/ or arg =~ /^\s*\-f$/
+      }
       exec "#{prefix}/mongod", *ARGV
     EOS
 

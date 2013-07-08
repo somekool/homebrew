@@ -2,11 +2,12 @@ require 'formula'
 
 class Harfbuzz < Formula
   homepage 'http://www.freedesktop.org/wiki/Software/HarfBuzz'
-  url 'http://www.freedesktop.org/software/harfbuzz/release/harfbuzz-0.9.15.tar.bz2'
-  sha256 '214f919c2c998eb1316dd1a14a13adf27460e706a709488777076babf7fbbf1d'
+  url 'http://www.freedesktop.org/software/harfbuzz/release/harfbuzz-0.9.18.tar.bz2'
+  sha256 'fef0fbbc6d6492cb4074a5e26a699d87d88bef8adc25dda62af6077735a7d908'
 
   depends_on 'pkg-config' => :build
   depends_on 'glib'
+  depends_on 'cairo'
   depends_on 'icu4c' => :recommended
 
   # Needs newer fontconfig than XQuartz provides for pango

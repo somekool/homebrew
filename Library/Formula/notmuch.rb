@@ -16,8 +16,8 @@ end
 
 class Notmuch < Formula
   homepage 'http://notmuchmail.org'
-  url 'http://notmuchmail.org/releases/notmuch-0.14.tar.gz'
-  sha1 'ad1ef9c2d29cfb0faab7837968d11325dee404bd'
+  url 'http://notmuchmail.org/releases/notmuch-0.15.2.tar.gz'
+  sha1 'cbfcfe8441dded2268da2740eb7da4c509c289bb'
 
   option "emacs", "Install emacs support."
 
@@ -39,6 +39,11 @@ class Notmuch < Formula
       args << "--without-emacs"
     end
     system "./configure", *args
-    system "make install"
+
+    if ARGV.verbose?
+      system "make install V=1"
+    else
+      system "make install"
+    end
   end
 end

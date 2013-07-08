@@ -4,10 +4,13 @@ require 'formula'
 # formula renames, see homebrew issue #14374.
 class Mpich2 < Formula
   homepage 'http://www.mpich.org/'
-  url 'http://www.mpich.org/static/tarballs/3.0.2/mpich-3.0.2.tar.gz'
-  sha1 '510f5a05bb5c8214caa86562e054c455cb5287d1'
+  url 'http://www.mpich.org/static/downloads/3.0.4/mpich-3.0.4.tar.gz'
+  sha1 'e89cc8de89d18d5718f7b881f3835b5a0943f897'
 
   head 'git://git.mpich.org/mpich.git'
+
+  option 'disable-fortran', "Do not attempt to build Fortran bindings"
+  option 'enable-shared', "Build shared libraries"
 
   # the HEAD version requires the autotools to be installed
   # (autoconf>=2.67, automake>=1.12.3, libtool>=2.4)
@@ -16,8 +19,7 @@ class Mpich2 < Formula
     depends_on 'libtool'  => :build
   end
 
-  option 'disable-fortran', "Do not attempt to build Fortran bindings"
-  option 'enable-shared', "Build shared libraries"
+  depends_on :fortran unless build.include? 'disable-fortran'
 
   conflicts_with 'open-mpi', :because => 'both install mpi__ compiler wrappers'
 
@@ -49,8 +51,6 @@ class Mpich2 < Formula
     ]
     if build.include? 'disable-fortran'
       args << "--disable-f77" << "--disable-fc"
-    else
-      ENV.fortran
     end
 
     # MPICH configure defaults to "--disable-shared"

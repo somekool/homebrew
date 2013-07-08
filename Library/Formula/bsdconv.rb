@@ -4,8 +4,8 @@ require 'formula'
 
 class Bsdconv < Formula
   homepage 'https://github.com/buganini/bsdconv'
-  url 'https://github.com/buganini/bsdconv/archive/9.1.tar.gz'
-  sha1 '0c76fa6ea9f5922a705826f95a99c36dd951845a'
+  url 'https://github.com/buganini/bsdconv/archive/10.0.tar.gz'
+  sha1 'cc5ad82723f989f93edf8ab83e36a7e89763649c'
 
   head 'https://github.com/buganini/bsdconv.git'
 
@@ -19,7 +19,7 @@ class Bsdconv < Formula
     Open3.popen3("#{bin}/bsdconv", "big5:utf-8") do |stdin, stdout, _|
       stdin.write("\263\134\245\134\273\134")
       stdin.close
-      stdout.read == "許功蓋"
+      assert_equal "許功蓋", stdout.read
     end
   end
 end

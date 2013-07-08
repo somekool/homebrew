@@ -2,8 +2,8 @@ require 'formula'
 
 class Mercurial < Formula
   homepage 'http://mercurial.selenic.com/'
-  url 'http://mercurial.selenic.com/release/mercurial-2.5.2.tar.gz'
-  sha1 'aa1503c353370bafc90d79b9c682aae9c1001c3c'
+  url 'http://mercurial.selenic.com/release/mercurial-2.6.2.tar.gz'
+  sha1 '861c1df8f50347c8381df3aa7e296113ecf24ae6'
 
   head 'http://selenic.com/repo/hg', :using => :hg
 
@@ -16,8 +16,7 @@ class Mercurial < Formula
     # System-provided Python.
     ENV.minimal_optimization
 
-    # install the completion script
-    (prefix/'etc/bash_completion.d').install 'contrib/bash_completion' => 'hg-completion.bash'
+    bash_completion.install 'contrib/bash_completion' => 'hg-completion.bash'
 
     system "make doc" if build.head? or build.include? 'doc'
     system "make local"

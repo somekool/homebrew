@@ -16,15 +16,15 @@ module MacOS::XQuartz extend self
         # system X11 distribution, we can't get the version from pkgutil, so
         # just use the expected version.
         case MacOS.version
-        when 10.5 then "2.1.6"
-        when 10.6 then "2.3.6"
-        when 10.7 then "2.6.3"
-        else "dunno"
+        when '10.5' then '2.1.6'
+        when '10.6' then '2.3.6'
+        when '10.7' then '2.6.3'
+        else 'dunno'
         end
       else
         # Finally, try to find it via pkgutil. This is slow, and only works
         # for the upstream XQuartz package, so use it as a last resort.
-        MacOS.pkgutil_info(FORGE_PKG_ID) =~ /version: (\d\.\d\.\d).+$/ and $1
+        MacOS.pkgutil_info(FORGE_PKG_ID)[/version: (\d\.\d\.\d).+$/, 1]
       end
     end
   end
@@ -70,27 +70,27 @@ module MacOS::X11 extend self
   # Confusingly, executables (e.g. config scripts) are only found under
   # /opt/X11/bin or /usr/X11/bin in all cases.
   def bin
-    prefix/'bin'
+    Pathname.new("#{prefix}/bin")
   end
 
   def include
     @include ||= if use_sdk?
-      MacOS.sdk_path/'usr/X11/include'
+      Pathname.new("#{MacOS.sdk_path}/usr/X11/include")
     else
-      prefix/'include'
+      Pathname.new("#{prefix}/include")
     end
   end
 
   def lib
     @lib ||= if use_sdk?
-      MacOS.sdk_path/'usr/X11/lib'
+      Pathname.new("#{MacOS.sdk_path}/usr/X11/lib")
     else
-      prefix/'lib'
+      Pathname.new("#{prefix}/lib")
     end
   end
 
   def share
-    prefix/'share'
+    Pathname.new("#{prefix}/share")
   end
 
   private

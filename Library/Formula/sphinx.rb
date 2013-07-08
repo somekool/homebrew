@@ -10,8 +10,8 @@ end
 
 class Sphinx < Formula
   homepage 'http://www.sphinxsearch.com'
-  url 'http://sphinxsearch.com/files/sphinx-2.0.6-release.tar.gz'
-  sha1 'fe1b990052f961a100adba197abe806a3c1b70dc'
+  url 'http://sphinxsearch.com/files/sphinx-2.0.8-release.tar.gz'
+  sha1 'a110e2736d34bb418e30a234fe13daa79a727df6'
 
   head 'http://sphinxsearch.googlecode.com/svn/trunk/'
 
@@ -29,9 +29,7 @@ class Sphinx < Formula
 
   fails_with :clang do
     build 421
-    cause <<-EOS.undent
-      sphinxexpr.cpp:1802:11: error: use of undeclared identifier 'ExprEval'
-    EOS
+    cause "sphinxexpr.cpp:1802:11: error: use of undeclared identifier 'ExprEval'"
   end
 
   def install

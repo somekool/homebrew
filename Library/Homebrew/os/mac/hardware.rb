@@ -7,8 +7,8 @@ module MacCPUs
     :g4 => '-mcpu=7400',
     :g4e => '-mcpu=7450',
     :g5 => '-mcpu=970'
-  }
-  def optimization_flags; OPTIMIZATION_FLAGS.dup; end
+  }.freeze
+  def optimization_flags; OPTIMIZATION_FLAGS; end
 
   # These methods use info spewed out by sysctl.
   # Look in <mach/machine.h> for decoding info.
@@ -42,6 +42,8 @@ module MacCPUs
         :sandybridge
       when 0x1F65E835 # Ivy Bridge
         :ivybridge
+      when 0x10B282DC # Haswell
+        :haswell
       else
         :dunno
       end

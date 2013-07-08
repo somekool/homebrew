@@ -5,8 +5,8 @@ class WineGecko < Formula
   sha1 'c30aa99621e98336eb4b7e2074118b8af8ea2ad5'
 
   devel do
-    url 'http://downloads.sourceforge.net/wine/wine_gecko-1.9-x86.msi', :using => :nounzip
-    sha1 'd2553224848a926eacfa8685662ff1d7e8be2428'
+    url 'http://downloads.sourceforge.net/wine/wine_gecko-2.21-x86.msi', :using => :nounzip
+    sha1 'a514fc4d53783a586c7880a676c415695fe934a3'
   end
 end
 
@@ -27,8 +27,8 @@ class Wine < Formula
     # updating too
     #  * http://wiki.winehq.org/Gecko
     #  * http://wiki.winehq.org/Mono
-    url 'http://downloads.sourceforge.net/project/wine/Source/wine-1.5.27.tar.bz2'
-    sha1 '457e75660312bd572ae85a567adf7805f482491e'
+    url 'http://downloads.sourceforge.net/project/wine/Source/wine-1.6-rc4.tar.bz2'
+    sha1 '8980040f6c27df4e4fd54eb7b29cdac93635b68f'
   end
 
   env :std
@@ -43,6 +43,9 @@ class Wine < Formula
   depends_on 'libicns'
   depends_on 'libtiff'
   depends_on 'little-cms'
+  depends_on 'gnutls' if build.devel?
+  depends_on 'sane-backends' if build.devel?
+  depends_on 'libgphoto2' if build.devel?
 
   fails_with :llvm do
     build 2336
@@ -69,14 +72,6 @@ class Wine < Formula
     EOS
   end
 
-  def winemac_key; <<-EOS.undent
-    REGEDIT4
-    [HKEY_CURRENT_USER\\Software\\Wine\\Drivers]
-    "Graphics"="mac,x11"
-    "Ime"="osxime,mac,x11"
-    EOS
-  end
-
   def install
     # Build 32-bit; Wine doesn't support 64-bit host builds on OS X.
     build32 = "-arch i386 -m32"
@@ -99,6 +94,11 @@ class Wine < Formula
     # Workarounds for XCode not including pkg-config files
     ENV.libxml2
     ENV.append "LDFLAGS", "-lxslt"
+
+    # As of 1.4 these don't do anything, but under 1.6 they will *possibly*
+    # resolve our issues with conflicting freetype installations
+    ENV['FREETYPE_CFLAGS'] = "-I#{MacOS::X11.include}/freetype2 -I#{MacOS::X11.include}"
+    ENV['FREETYPE_LIBS'] = "-L#{MacOS::X11.lib} -lfreetype"
 
     args = %W[--prefix=#{prefix}
               --with-coreaudio
@@ -127,8 +127,6 @@ class Wine < Formula
     # and name our startup script wine
     mv bin/'wine', bin/'wine.bin'
     (bin/'wine').write(wine_wrapper)
-
-    (prefix/'winemac.key').write(winemac_key) unless build.stable?
   end
 
   def caveats
@@ -150,18 +148,6 @@ class Wine < Formula
         which may cause text rendering issues in applications such as Steam.
         We recommend that you run winecfg, add an override for dwrite in the
         Libraries tab, and edit the override mode to "disable".
-      EOS
-      s += <<-EOS.undent
-
-        Starting with wine 1.5.22 the new experimental Mac driver by CodeWeavers has
-        been included in the main distribution. This allows wine to run without X11
-        on MacOS X. To enable it execute the following command in your wine prefix:
-
-          wine regedit #{prefix/'winemac.key'}
-
-        To disable it execute:
-
-          wine regedit /D 'HKEY_CURRENT_USER\\Software\\Wine\\Drivers'
       EOS
     end
     return s

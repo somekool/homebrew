@@ -19,29 +19,37 @@ module MacOS::Xcode extend self
 
   def latest_version
     case MacOS.version
-      when 10.5 then "3.1.4"
-      when 10.6 then "3.2.6"
+    when "10.4"         then "2.5"
+    when "10.5"         then "3.1.4"
+    when "10.6"         then "3.2.6"
+    when "10.7", "10.8" then "4.6.3"
+    when "10.9"         then "5.0"
     else
-      if MacOS.version >= 10.7
-        "4.6.1"
+      # Default to newest known version of Xcode for unreleased OSX versions.
+      if MacOS.version > 10.9
+        "5.0"
       else
-        raise "Mac OS X `#{MacOS.version}' is invalid"
+        raise "Mac OS X '#{MacOS.version}' is invalid"
       end
     end
+  end
+
+  def outdated?
+    version < latest_version
   end
 
   def prefix
     @prefix ||= begin
       path = Pathname.new(folder)
-      if path.absolute? and (path/'usr/bin/make').executable?
+      if path.absolute? and File.executable? "#{path}/usr/bin/make"
         path
       elsif File.executable? '/Developer/usr/bin/make'
         # we do this to support cowboys who insist on installing
         # only a subset of Xcode
-        Pathname.new '/Developer'
-      elsif (V4_BUNDLE_PATH/'Contents/Developer/usr/bin/make').executable?
+        Pathname.new('/Developer')
+      elsif File.executable? "#{V4_BUNDLE_PATH}/Contents/Developer/usr/bin/make"
         # fallback for broken Xcode 4.3 installs
-        V4_BUNDLE_PATH/'Contents/Developer'
+        Pathname.new("#{V4_BUNDLE_PATH}/Contents/Developer")
       else
         # Ask Spotlight where Xcode is. If the user didn't install the
         # helper tools and installed Xcode in a non-conventional place, this
@@ -51,7 +59,7 @@ module MacOS::Xcode extend self
 
         unless path.nil?
           path += "Contents/Developer"
-          path if (path/'usr/bin/make').executable?
+          path if File.executable? "#{path}/usr/bin/make"
         end
       end
     end
@@ -76,7 +84,7 @@ module MacOS::Xcode extend self
 
     # this shortcut makes version work for people who don't realise you
     # need to install the CLI tools
-    xcode43build = prefix/'usr/bin/xcodebuild'
+    xcode43build = Pathname.new("#{prefix}/usr/bin/xcodebuild")
     if xcode43build.file?
       `#{xcode43build} -version 2>/dev/null` =~ /Xcode (\d(\.\d)*)/
       return $1 if $1
@@ -120,6 +128,7 @@ module MacOS::Xcode extend self
       when 40      then "4.4"
       when 41      then "4.5"
       when 42      then "4.6"
+      when 50      then "5.0"
       else "4.6"
       end
     end
@@ -145,17 +154,25 @@ end
 module MacOS::CLT extend self
   STANDALONE_PKG_ID = "com.apple.pkg.DeveloperToolsCLILeo"
   FROM_XCODE_PKG_ID = "com.apple.pkg.DeveloperToolsCLI"
+  STANDALONE_PKG_PATH = Pathname.new("/Library/Developer/CommandLineTools")
 
-  # This is true ift he standard UNIX tools are present under /usr. For
-  # Xcode < 4.3, this is the standard location. Otherwise, it means that
-  # the user has installed the "Command Line Tools for Xcode" package.
+  # This is true if the standard UNIX tools are present in the expected location. For
+  # Mavericks and above this is /Library/Developer/CommandLineTools otherwise it is /usr.
+  # For Xcode < 4.3, this is the standard location. Otherwise, it means that the user has
+  # installed the "Command Line Tools" package.
   def installed?
-    MacOS.dev_tools_path == Pathname.new("/usr/bin")
+    (MacOS.dev_tools_path == Pathname.new("#{MacOS::CLT::STANDALONE_PKG_PATH}/usr/bin") \
+      and File.directory? "#{MacOS::CLT::STANDALONE_PKG_PATH}/usr/include") or
+    (MacOS.dev_tools_path == Pathname.new("/usr/bin") and File.directory? "/usr/include")
   end
 
   def latest_version?
     `/usr/bin/clang --version` =~ %r{clang-(\d+)\.(\d+)\.(\d+)}
-    $1.to_i >= 425 and $3.to_i >= 27
+    $1.to_i >= 425 and $3.to_i >= 28
+  end
+
+  def outdated?
+    !latest_version?
   end
 
   def version

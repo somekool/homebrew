@@ -2,8 +2,8 @@ require 'formula'
 
 class Wrk < Formula
   homepage 'https://github.com/wg/wrk'
-  url 'https://github.com/wg/wrk/archive/1.1.1.tar.gz'
-  sha1 '47713b26b17f6d461dcfaaa6eea841f201fdf75d'
+  url 'https://github.com/wg/wrk/archive/2.0.0.tar.gz'
+  sha1 'f4d3562ef41b8470e368b542686af3f42618aa67'
 
   def install
     system "make"
