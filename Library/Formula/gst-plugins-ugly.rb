@@ -2,9 +2,16 @@ require 'formula'
 
 class GstPluginsUgly < Formula
   homepage 'http://gstreamer.freedesktop.org/'
-  url 'http://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-1.0.7.tar.xz'
-  mirror 'http://ftp.osuosl.org/pub/blfs/svn/g/gst-plugins-ugly-1.0.7.tar.xz'
-  sha256 'b78b8cfabe322497da432a0f297dbb21862a033f95e8d4cd8f207eccb5288f2b'
+  url 'http://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-1.0.9.tar.xz'
+  mirror 'http://ftp.osuosl.org/pub/blfs/svn/g/gst-plugins-ugly-1.0.9.tar.xz'
+  sha256 '11250fe9e44b0169c3a289e981b31874b483643ed78f619682ae1644d7088379'
+
+  head 'git://anongit.freedesktop.org/gstreamer/gst-plugins-ugly'
+
+  if build.head?
+    depends_on :automake
+    depends_on :libtool
+  end
 
   depends_on 'pkg-config' => :build
   depends_on 'xz' => :build
@@ -40,11 +47,16 @@ class GstPluginsUgly < Formula
     ENV.append "CFLAGS", "-no-cpp-precomp -funroll-loops -fstrict-aliasing"
 
     args = %W[
-      --disable-debug
-      --disable-dependency-tracking
       --prefix=#{prefix}
       --mandir=#{man}
+      --disable-debug
+      --disable-dependency-tracking
     ]
+
+    if build.head?
+      ENV.append "NOCONFIGURE", "yes"
+      system "./autogen.sh"
+    end
 
     if build.with? "opencore-amr"
       # Fixes build error, missing includes.
@@ -59,6 +71,6 @@ class GstPluginsUgly < Formula
 
     system "./configure", *args
     system "make"
-    system "make install"
+    system "make", "install"
   end
 end

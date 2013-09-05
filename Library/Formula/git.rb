@@ -1,19 +1,19 @@
 require 'formula'
 
 class GitManuals < Formula
-  url 'http://git-core.googlecode.com/files/git-manpages-1.8.3.2.tar.gz'
-  sha1 '5ce8c00fe9e2755c67d29b2f2135fc8c4202fc1f'
+  url 'http://git-core.googlecode.com/files/git-manpages-1.8.4.tar.gz'
+  sha1 '8c67a7bc442d6191bc17633c7f2846c71bda71cf'
 end
 
 class GitHtmldocs < Formula
-  url 'http://git-core.googlecode.com/files/git-htmldocs-1.8.3.2.tar.gz'
-  sha1 'adffaa379e1994fc6d6cb6491aed680ad6bb37ad'
+  url 'http://git-core.googlecode.com/files/git-htmldocs-1.8.4.tar.gz'
+  sha1 'f130398eb623c913497ef51a6e61d916fe7e31c8'
 end
 
 class Git < Formula
   homepage 'http://git-scm.com'
-  url 'http://git-core.googlecode.com/files/git-1.8.3.2.tar.gz'
-  sha1 '4a6585dd81a542e7803e5f54a5c85b1c1a5869aa'
+  url 'http://git-core.googlecode.com/files/git-1.8.4.tar.gz'
+  sha1 '2a361a2d185b8bc604f7f2ce2f502d0dea9d3279'
 
   head 'https://github.com/git/git.git'
 
@@ -47,6 +47,7 @@ class Git < Formula
     ENV['NO_GETTEXT'] = '1' unless build.with? 'gettext'
 
     system "make", "prefix=#{prefix}",
+                   "sysconfdir=#{etc}",
                    "CC=#{ENV.cc}",
                    "CFLAGS=#{ENV.cflags}",
                    "LDFLAGS=#{ENV.ldflags}",

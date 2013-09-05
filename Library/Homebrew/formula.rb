@@ -14,6 +14,7 @@ require 'formulary'
 
 class Formula
   include FileUtils
+  include Utils::Inreplace
   extend BuildEnvironmentDSL
 
   attr_reader :name, :path, :homepage, :downloader
@@ -27,7 +28,7 @@ class Formula
   def initialize name='__UNKNOWN__', path=nil
     @name = name
     # If we got an explicit path, use that, else determine from the name
-    @path = path.nil? ? self.class.path(name) : Pathname.new(path)
+    @path = path.nil? ? self.class.path(name) : Pathname.new(path).expand_path
     @homepage = self.class.homepage
 
     set_spec :stable
@@ -211,7 +212,12 @@ class Formula
   def fails_with? cc
     cc = Compiler.new(cc) unless cc.is_a? Compiler
     (self.class.cc_failures || []).any? do |failure|
-      failure.compiler == cc.name && failure.build >= cc.build
+      if cc.version
+        # non-Apple GCCs don't have builds, just version numbers
+        failure.compiler == cc.name && failure.version >= cc.version
+      else
+        failure.compiler == cc.name && failure.build >= cc.build
+      end
     end
   end
 
@@ -306,6 +312,10 @@ class Formula
     ]
   end
 
+  # Install python bindings inside of a block given to this method and/or
+  # call python so: `system python, "setup.py", "install", "--prefix=#{prefix}"
+  # Note that there are no quotation marks around python!
+  # <https://github.com/mxcl/homebrew/wiki/Homebrew-and-Python>
   def python(options={:allowed_major_versions => [2, 3]}, &block)
     require 'python_helper'
     python_helper(options, &block)
@@ -350,7 +360,9 @@ class Formula
   end
 
   def self.installed
-    HOMEBREW_CELLAR.children.map do |rack|
+    return [] unless HOMEBREW_CELLAR.directory?
+
+    HOMEBREW_CELLAR.subdirs.map do |rack|
       begin
         factory(rack.basename.to_s)
       rescue FormulaUnavailableError
@@ -503,6 +515,9 @@ class Formula
   def test
     require 'test/unit/assertions'
     extend(Test::Unit::Assertions)
+    # Adding the used options allows us to use `build.with?` inside of tests
+    tab = Tab.for_name(name)
+    tab.used_options.each { |opt| build.args << opt unless build.has_opposite_of? opt }
     ret = nil
     mktemp do
       @testpath = Pathname.pwd
@@ -576,9 +591,7 @@ class Formula
     raise BuildError.new(self, cmd, args, $?)
   ensure
     f.close if f and not f.closed?
-    removed_ENV_variables.each do |key, value|
-      ENV[key] = value
-    end if removed_ENV_variables
+    ENV.update(removed_ENV_variables) if removed_ENV_variables
   end
 
   private
@@ -607,8 +620,8 @@ class Formula
     ohai "Patching"
     patch_list.each do |p|
       case p.compression
-        when :gzip  then safe_system "/usr/bin/gunzip",  p.compressed_filename
-        when :bzip2 then safe_system "/usr/bin/bunzip2", p.compressed_filename
+        when :gzip  then with_system_path { safe_system "gunzip",  p.compressed_filename }
+        when :bzip2 then with_system_path { safe_system "bunzip2", p.compressed_filename }
       end
       # -f means don't prompt the user if there are errors; just exit with non-zero status
       safe_system '/usr/bin/patch', '-f', *(p.patch_args)
@@ -687,7 +700,7 @@ class Formula
 
     def depends_on dep
       d = dependencies.add(dep)
-      post_depends_on(d) unless d.nil?
+      build.add_dep_option(d) unless d.nil?
     end
 
     def option name, description=nil
@@ -707,8 +720,9 @@ class Formula
       @conflicts ||= []
     end
 
-    def conflicts_with name, opts={}
-      conflicts << FormulaConflict.new(name, opts[:because])
+    def conflicts_with *names
+      opts = Hash === names.last ? names.pop : {}
+      names.each { |name| conflicts << FormulaConflict.new(name, opts[:because]) }
     end
 
     def skip_clean *paths
@@ -747,19 +761,6 @@ class Formula
       return @test unless block_given?
       @test_defined = true
       @test = block
-    end
-
-    private
-
-    def post_depends_on(dep)
-      # Generate with- or without- options for optional and recommended
-      # dependencies and requirements
-      name = dep.name.split("/").last # strip any tap prefix
-      if dep.optional? && !build.has_option?("with-#{name}")
-        build.add("with-#{name}", "Build with #{name} support")
-      elsif dep.recommended? && !build.has_option?("without-#{name}")
-        build.add("without-#{name}", "Build without #{name} support")
-      end
     end
   end
 end

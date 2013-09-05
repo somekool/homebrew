@@ -20,7 +20,7 @@ class Grass < Formula
   depends_on 'wxmac' => :recommended # prefer over OS X's version because of 64bit
   depends_on :postgresql => :optional
   depends_on :mysql => :optional
-  depends_on "cairo" if MacOS.version == :leopard
+  depends_on "cairo" if MacOS.version <= :leopard
   depends_on :x11  # needs to find at least X11/include/GL/gl.h
 
   # Patches that files are not installed outside of the prefix.
@@ -75,15 +75,11 @@ class Grass < Formula
       args << "--with-wxwidgets=#{Formula.factory('wxmac').opt_prefix}/bin/wx-config"
     end
 
-    if MacOS.prefer_64_bit?
-      args << "--enable-64bit"
-      args << "--with-macosx-archs=x86_64"
-    else
-      args << "--with-macosx-archs=i386"
-    end
+    args << "--enable-64bit" if MacOS.prefer_64_bit?
+    args << "--with-macos-archs=#{MacOS.preferred_arch}"
 
     # Deal with Cairo support
-    if MacOS.version == :leopard
+    if MacOS.version <= :leopard
       cairo = Formula.factory('cairo')
       args << "--with-cairo-includes=#{cairo.include}/cairo"
       args << "--with-cairo-libs=#{cairo.lib}"

@@ -1,6 +1,7 @@
 require 'tab'
 require 'macos'
 require 'extend/ARGV'
+require 'bottle_version'
 
 # TODO: use options={} for some arguments.
 
@@ -16,6 +17,7 @@ def install_bottle? f, warn=false
     and f.downloader.local_bottle_path
 
   return false if ARGV.build_from_source?
+  return true if ARGV.force_bottle?
   return false unless f.pour_bottle?
   return false unless f.build.used_options.empty?
   return false unless bottle_current?(f)
@@ -88,4 +90,11 @@ def bottle_tag
   else
     Hardware::CPU.type == :ppc ? Hardware::CPU.family : MacOS.cat
   end
+end
+
+def bottle_filename_formula_name filename
+  path = Pathname.new filename
+  version = BottleVersion.parse(path).to_s
+  basename = path.basename.to_s
+  basename.rpartition("-#{version}").first
 end

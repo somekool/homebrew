@@ -8,9 +8,9 @@ end
 
 class AndroidSdk < Formula
   homepage 'http://developer.android.com/index.html'
-  url 'http://dl.google.com/android/android-sdk_r22.0.1-macosx.zip'
-  version 'r22.0.1'
-  sha1 '59365847b63792cafc3c3d8134c6392c86f9bf72'
+  url 'http://dl.google.com/android/android-sdk_r22.0.5-macosx.zip'
+  version '22.0.5'
+  sha1 'a4585d7e87a61a2a8cfd29a45514292f686e5281'
 
   # TODO docs and platform-tools
   # See the long comment below for the associated problems
@@ -21,8 +21,7 @@ class AndroidSdk < Formula
   skip_clean var_dirs
 
   def install
-    mv 'SDK Readme.txt', prefix/'README'
-    mv 'tools', prefix
+    prefix.install 'tools', 'SDK Readme.txt' => 'README'
 
     %w[android apkbuilder ddms dmtracedump draw9patch etc1tool emulator
     emulator-arm emulator-x86 hierarchyviewer hprof-conv lint mksdcard
