@@ -10,12 +10,5 @@ class KdeRuntime < BaseKdeFormula
     sha1 '7c077b5ff2839fee1cc55016cd6711da1abb584c'
   end
 
-  depends_on 'kde-phonon'
-  depends_on 'oxygen-icons'
   depends_on 'kdelibs'
-
-  def extra_cmake_args
-    phonon = Formula.factory 'kde-phonon'
-    "-DPHONON_INCLUDE_DIR=#{phonon.include} -DPHONON_LIBRARY=#{phonon.lib}/libphonon.dylib"
-  end
 end

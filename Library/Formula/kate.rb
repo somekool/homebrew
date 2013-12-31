@@ -1,7 +1,7 @@
 require 'base_kde_formula'
 
 class Kate < BaseKdeFormula
-  homepage 'http://kate-editor.org'
+  homepage 'http://www.kde.org/'
   url 'http://download.kde.org/stable/4.11.4/src/kate-4.11.4.tar.xz'
   sha1 'a6428ad1ae569c6be9192e2fe1db3cd844a257fc'
 
@@ -11,5 +11,4 @@ class Kate < BaseKdeFormula
   end
 
   depends_on 'kdelibs'
-  depends_on 'kde-runtime'
 end

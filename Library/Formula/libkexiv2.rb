@@ -11,5 +11,4 @@ class Libkexiv2 < BaseKdeFormula
   end
 
   depends_on 'kdelibs'
-  depends_on 'exiv2'
 end

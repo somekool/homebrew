@@ -10,5 +10,5 @@ class Kdepim < BaseKdeFormula
     sha1 '1ca184dc89f8c8395ffe4ec62a3fdcd0a7397ac4'
   end
 
-  depends_on 'kdepimlibs'
+  depends_on 'kdelibs'
 end

@@ -11,5 +11,4 @@ class KdeBaseapps < BaseKdeFormula
   end
 
   depends_on 'kdelibs'
-  depends_on 'kde-runtime'
 end

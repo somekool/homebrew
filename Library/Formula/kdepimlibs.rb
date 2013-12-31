@@ -11,7 +11,4 @@ class Kdepimlibs < BaseKdeFormula
   end
 
   depends_on 'kdelibs'
-  depends_on 'gpgme'
-  depends_on 'akonadi'
-  depends_on 'libical'
 end

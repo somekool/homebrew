@@ -1,7 +1,7 @@
 require 'base_kde_formula'
 
 class Kolourpaint < BaseKdeFormula
-  homepage 'http://www.kolourpaint.org/'
+  homepage 'http://www.kde.org/'
   url 'http://download.kde.org/stable/4.11.4/src/kolourpaint-4.11.4.tar.xz'
   sha1 '5eddca851a4b85fb68e2c596ce4a7658682e9c23'
 
@@ -11,5 +11,4 @@ class Kolourpaint < BaseKdeFormula
   end
 
   depends_on 'kdelibs'
-  depends_on 'kde-runtime'
 end

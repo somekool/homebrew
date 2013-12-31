@@ -1,7 +1,7 @@
 require 'base_kde_formula'
 
 class Kstars < BaseKdeFormula
-  homepage 'http://edu.kde.org/kstars/'
+  homepage 'http://www.kde.org/'
   url 'http://download.kde.org/stable/4.11.4/src/kstars-4.11.4.tar.xz'
   sha1 '0aa80b7b3bdcf1c8c2d44bf26d53a8c10e8e8a04'
 
@@ -11,6 +11,4 @@ class Kstars < BaseKdeFormula
   end
 
   depends_on 'kdelibs'
-  depends_on 'kde-runtime'
-  depends_on 'eigen'
 end
