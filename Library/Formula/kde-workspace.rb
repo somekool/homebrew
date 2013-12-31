@@ -2,13 +2,8 @@ require 'base_kde_formula'
 
 class KdeWorkspace < BaseKdeFormula
   homepage 'http://www.kde.org/'
-  url 'http://download.kde.org/stable/4.10.2/src/kde-workspace-4.10.2.tar.xz'
-  sha1 '12b10e8bea44f3aafa0c8d776eadfee14d71c3f8'
-
-  devel do
-    url 'http://download.kde.org/stable/4.10.2/src/kde-workspace-4.10.2.tar.xz'
-    sha1 '12b10e8bea44f3aafa0c8d776eadfee14d71c3f8'
-  end
+  url 'http://download.kde.org/stable/4.11.4/src/kde-workspace-4.11.4.tar.xz'
+  sha1 'c1e2b669f5a1607bcce7e92d9213af1ee809d79e'
 
   depends_on 'kdelibs'
 end

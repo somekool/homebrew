@@ -2,12 +2,12 @@ require 'base_kde_formula'
 
 class Kmines < BaseKdeFormula
   homepage 'http://www.kde.org/'
-  url 'http://download.kde.org/stable/4.10.2/src/kmines-4.10.2.tar.xz'
-  sha1 '5b0775fb30fe59c017651d80658cc59f1358b7a4'
+  url 'http://download.kde.org/stable/4.11.4/src/kmines-4.11.4.tar.xz'
+  sha1 '55f35dbc2a625921eeac5f6b402f065236a80f4a'
 
   devel do
-    url 'http://download.kde.org/stable/4.10.2/src/kmines-4.10.2.tar.xz'
-    sha1 '5b0775fb30fe59c017651d80658cc59f1358b7a4'
+    url 'http://download.kde.org/stable/4.12.0/src/kmines-4.12.0.tar.xz'
+    sha1 '05de6c7620247d4b221a0cae5905e9c3a553843f'
   end
 
   depends_on 'kdelibs'
