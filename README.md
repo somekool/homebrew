@@ -2,7 +2,10 @@ Homebrew
 ========
 Features, usage and installation instructions are [summarized on the homepage][home].
 
-This fork has for main purpose to get as many KDE applications working under OS-X.
+This is an experimental fork to get as many KDE applications working under OS-X.
+
+I recommend you have a look at the more recent, more stable alternative [https://github.com/adymo/homebrew-kde][https://github.com/adymo/homebrew-kde]
+
 
 What Packages Are Available?
 ----------------------------
