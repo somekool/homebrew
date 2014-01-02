@@ -2,12 +2,13 @@ require 'formula'
 
 class Elasticsearch < Formula
   homepage 'http://www.elasticsearch.org'
-  url 'https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.3.tar.gz'
-  sha1 '24843192bee3afd19f5a958800e896153dbc3569'
+  url 'https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.9.tar.gz'
+  sha1 '21ddd2d2666ff7ffec99caa1a210bfc0a3ee6c40'
 
-  head 'https://github.com/elasticsearch/elasticsearch.git'
-
-  depends_on 'maven' if build.head?
+  head do
+    url 'https://github.com/elasticsearch/elasticsearch.git'
+    depends_on 'maven'
+  end
 
   def cluster_name
     "elasticsearch_#{ENV['USER']}"

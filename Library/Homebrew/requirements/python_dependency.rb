@@ -6,14 +6,14 @@ require 'requirement'
 # In `dependency_collector.rb`, special `:python` and `:python3` shortcuts are
 # defined. You can specify a minimum version of the Python that needs to be
 # present, but since not every package is ported to 3.x yet,
-# `PythonInstalled("2")` is not satisfied by 3.x.
+# `PythonDependency("2")` is not satisfied by 3.x.
 # In a formula that shall provide support for 2.x and 3.x, the idiom is:
 # depends_on :python
 # depends_on :python3 => :optional # or :recommended
 #
 # Todo:
 # - Allow further options that choose: universal, framework?, brewed?...
-class PythonInstalled < Requirement
+class PythonDependency < Requirement
   attr_reader :min_version
   attr_reader :if3then3
   attr_reader :imports
@@ -34,7 +34,6 @@ class PythonInstalled < Requirement
   end
 
   def initialize(default_version="2.6", tags=[])
-    tags = [tags].flatten
     # Extract the min_version if given. Default to default_version else
     if /(\d+\.)*\d+/ === tags.first.to_s
       @min_version = PythonVersion.new(tags.shift)
@@ -86,7 +85,7 @@ class PythonInstalled < Requirement
       ENV['PYTHONPATH'] = nil
       @unsatisfied_because = ''
       if binary.nil? || !binary.executable?
-        @unsatisfied_because += "No `#{@python}` found in your PATH! Consider to `brew install #{@python}`."
+        @unsatisfied_because += "No `#{@python}` found in your PATH. To install with Homebrew use `brew install #{@python}`."
         false
       elsif pypy?
         @unsatisfied_because += "Your #{@python} executable appears to be a PyPy, which is not supported."
@@ -98,7 +97,7 @@ class PythonInstalled < Requirement
         @unsatisfied_because += "Python version #{version} is too old (need at least #{@min_version})."
         false
       elsif @min_version.major == 2 && `python -c "import sys; print(sys.version_info[0])"`.strip == "3"
-        @unsatisfied_because += "Your `python` points to a Python 3.x. This is not supported."
+        @unsatisfied_because += "Your `python` points to Python 3.x; this is not supported."
         false
       else
         @imports.keys.all? do |module_name|
@@ -143,8 +142,8 @@ class PythonInstalled < Requirement
     if brewed?
       # Homebrew since a long while only supports frameworked python
       HOMEBREW_PREFIX/"opt/#{python}/Frameworks/Python.framework/Versions/#{version.major}.#{version.minor}"
-    elsif from_osx?
-      # Python on OS X has been stripped off its includes (unless you install the CLT), therefore we use the MacOS.sdk.
+    elsif from_osx? and MacOS.version < :mavericks
+      # Python on OS X before Mavericks has been stripped off its includes (unless you install the CLT), therefore we use the MacOS.sdk.
       Pathname.new("#{MacOS.sdk_path}/System/Library/Frameworks/Python.framework/Versions/#{version.major}.#{version.minor}")
     else
       # What Python knows about itself
@@ -279,7 +278,7 @@ class PythonInstalled < Requirement
     # Todo: If Jack's formula revisions arrive, we can get rid of this here!
     if brewed?
       require 'formula'
-      file = Formula.factory(@python).prefix/"Frameworks/Python.framework/Versions/#{version.major}.#{version.minor}/lib/#{xy}/distutils/distutils.cfg"
+      file = Formula.factory(@python).opt_prefix/"Frameworks/Python.framework/Versions/#{version.major}.#{version.minor}/lib/#{xy}/distutils/distutils.cfg"
       ohai "Writing #{file}" if ARGV.verbose? && ARGV.debug?
       file.delete if file.exist?
       file.write <<-EOF.undent
@@ -296,11 +295,11 @@ class PythonInstalled < Requirement
     <<-EOF.undent
       # This file is created by Homebrew and is executed on each python startup.
       # Don't print from here, or else python command line scripts may fail!
-      # <https://github.com/mxcl/homebrew/wiki/Homebrew-and-Python>
+      # <https://github.com/Homebrew/homebrew/wiki/Homebrew-and-Python>
+      import os
       import sys
 
       if sys.version_info[0] != #{version.major}:
-          import os
           # This can only happen if the user has set the PYTHONPATH for 3.x and run Python 2.x or vice versa.
           # Every Python looks at the PYTHONPATH variable and we can't fix it here in sitecustomize.py,
           # because the PYTHONPATH is evaluated after the sitecustomize.py. Many modules (e.g. PyQt4) are
@@ -311,7 +310,8 @@ class PythonInstalled < Requirement
                '     You should `unset PYTHONPATH` to fix this.')
       else:
           # Only do this for a brewed python:
-          if sys.executable.startswith('#{HOMEBREW_PREFIX}'):
+          opt_executable = '#{HOMEBREW_PREFIX}/opt/#{python}/bin/#{xy}'
+          if os.path.realpath(sys.executable) == os.path.realpath(opt_executable):
               # Remove /System site-packages, and the Cellar site-packages
               # which we moved to lib/pythonX.Y/site-packages. Further, remove
               # HOMEBREW_PREFIX/lib/python because we later addsitedir(...).
@@ -332,7 +332,7 @@ class PythonInstalled < Requirement
                   pass  # remember: don't print here. Better to fail silently.
 
               # Set the sys.executable to use the opt_prefix
-              sys.executable = '#{HOMEBREW_PREFIX}/opt/#{python}/bin/#{xy}'
+              sys.executable = opt_executable
 
           # Tell about homebrew's site-packages location.
           # This is needed for Python to parse *.pth.

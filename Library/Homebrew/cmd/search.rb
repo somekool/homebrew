@@ -61,7 +61,7 @@ module Homebrew extend self
       count = local_results.length + tap_results.length
 
       if count == 0 and not blacklisted? query
-        puts "No formula found for #{query.inspect}. Searching open pull requests..."
+        puts "No formula found for #{query.inspect}."
         begin
           GitHub.find_pull_requests(rx) { |pull| puts pull }
         rescue GitHub::Error => e
@@ -73,7 +73,6 @@ module Homebrew extend self
 
   SEARCHABLE_TAPS = [
     %w{josegonzalez php},
-    %w{samueljohn python},
     %w{marcqualie nginx},
     %w{Homebrew apache},
     %w{Homebrew versions},
@@ -81,8 +80,8 @@ module Homebrew extend self
     %w{Homebrew games},
     %w{Homebrew science},
     %w{Homebrew completions},
-    %w{Homebrew x11},
     %w{Homebrew binary},
+    %w{Homebrew python},
   ]
 
   def query_regexp(query)

@@ -2,8 +2,8 @@ require 'formula'
 
 class SeleniumServerStandalone < Formula
   homepage 'http://seleniumhq.org/'
-  url 'http://selenium.googlecode.com/files/selenium-server-standalone-2.35.0.jar'
-  sha1 'd27ff0f4ff5c06f63ad9113f448f37e6a00147d1'
+  url 'http://selenium.googlecode.com/files/selenium-server-standalone-2.39.0.jar'
+  sha1 'f2391600481dd285002d04b66916fc4286ff70ce'
 
   def install
     prefix.install "selenium-server-standalone-#{version}.jar"

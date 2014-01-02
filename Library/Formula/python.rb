@@ -1,29 +1,17 @@
 require 'formula'
 
-class Setuptools < Formula
-  url 'https://pypi.python.org/packages/source/s/setuptools/setuptools-1.1.tar.gz'
-  sha1 '0c789b38afa522605407515efb74a0278b867628'
-end
-
-class Pip < Formula
-  url 'https://pypi.python.org/packages/source/p/pip/pip-1.4.1.tar.gz'
-  sha1 '9766254c7909af6d04739b4a7732cc29e9a48cb0'
-end
-
 class Python < Formula
   homepage 'http://www.python.org'
-  url 'http://www.python.org/ftp/python/2.7.5/Python-2.7.5.tar.bz2'
-  sha1 '6cfada1a739544a6fa7f2601b500fba02229656b'
-
   head 'http://hg.python.org/cpython', :using => :hg, :branch => '2.7'
+  url 'http://www.python.org/ftp/python/2.7.6/Python-2.7.6.tgz'
+  sha1 '8328d9f1d55574a287df384f4931a3942f03da64'
 
   option :universal
-  option 'quicktest', 'Run `make quicktest` after the build (for devs; may fail)'
+  option 'quicktest', "Run `make quicktest` after the build (for devs; may fail)"
   option 'with-brewed-openssl', "Use Homebrew's openSSL instead of the one from OS X"
   option 'with-brewed-tk', "Use Homebrew's Tk (has optional Cocoa and threads support)"
-  option 'with-poll', 'Enable select.poll, which is not fully implemented on OS X (http://bugs.python.org/issue5154)'
-  # --with-dtrace relies on CLT as dtrace hard-codes paths to /usr
-  option 'with-dtrace', 'Experimental DTrace support (http://bugs.python.org/issue13405)' if MacOS::CLT.installed?
+  option 'with-poll', "Enable select.poll, which is not fully implemented on OS X (http://bugs.python.org/issue5154)"
+  option 'with-dtrace', "Experimental DTrace support (http://bugs.python.org/issue13405)"
 
   depends_on 'pkg-config' => :build
   depends_on 'readline' => :recommended
@@ -36,13 +24,20 @@ class Python < Formula
   skip_clean 'bin/pip', 'bin/pip-2.7'
   skip_clean 'bin/easy_install', 'bin/easy_install-2.7'
 
+  resource 'setuptools' do
+    url 'https://pypi.python.org/packages/source/s/setuptools/setuptools-2.0.1.tar.gz'
+    sha1 '5283b4dca46d45efd1156713ab51836509646c03'
+  end
+
+  resource 'pip' do
+    url 'https://pypi.python.org/packages/source/p/pip/pip-1.4.1.tar.gz'
+    sha1 '9766254c7909af6d04739b4a7732cc29e9a48cb0'
+  end
+
   def patches
-    p = []
-    p << 'https://gist.github.com/paxswill/5402840/raw/75646d5860685c8be98858288d1772f64d6d5193/pythondtrace-patch.diff' if build.with? 'dtrace'
     # Patch to disable the search for Tk.framework, since Homebrew's Tk is
     # a plain unix build. Remove `-lX11`, too because our Tk is "AquaTk".
-    p << DATA if build.with? 'brewed-tk'
-    p
+    DATA if build.with? 'brewed-tk'
   end
 
   def site_packages_cellar
@@ -126,9 +121,9 @@ class Python < Formula
     # Symlink the prefix site-packages into the cellar.
     ln_s site_packages, site_packages_cellar
 
-    # We ship setuptools and pip and reuse the PythonInstalled
+    # We ship setuptools and pip and reuse the PythonDependency
     # Requirement here to write the sitecustomize.py
-    py = PythonInstalled.new("2.7")
+    py = PythonDependency.new("2.7")
     py.binary = bin/'python'
     py.modify_build_environment
 
@@ -141,8 +136,9 @@ class Python < Formula
 
     setup_args = [ "-s", "setup.py", "--no-user-cfg", "install", "--force", "--verbose",
                    "--install-scripts=#{bin}", "--install-lib=#{site_packages}" ]
-    Setuptools.new.brew { system py.binary, *setup_args }
-    Pip.new.brew { system py.binary, *setup_args }
+
+    resource('setuptools').stage { system py.binary, *setup_args }
+    resource('pip').stage { system py.binary, *setup_args }
 
     # And now we write the distutils.cfg
     cfg = prefix/"Frameworks/Python.framework/Versions/2.7/lib/python2.7/distutils/distutils.cfg"
@@ -166,7 +162,7 @@ class Python < Formula
       EOS
 
       # Fixes setting Python build flags for certain software
-      # See: https://github.com/mxcl/homebrew/pull/20182
+      # See: https://github.com/Homebrew/homebrew/pull/20182
       # http://bugs.python.org/issue3588
       inreplace "#{prefix}/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config/Makefile" do |s|
         s.change_make_var! "LINKFORSHARED",
@@ -220,7 +216,7 @@ class Python < Formula
     ENV.minimal_optimization
 
     # We need to enable warnings because the configure.in uses -Werror to detect
-    # "whether gcc supports ParseTuple" (https://github.com/mxcl/homebrew/issues/12194)
+    # "whether gcc supports ParseTuple" (https://github.com/Homebrew/homebrew/issues/12194)
     ENV.enable_warnings
     if ENV.compiler == :clang
       # http://docs.python.org/devguide/setup.html#id8 suggests to disable some Warnings.
@@ -248,7 +244,7 @@ class Python < Formula
       They will install into the site-package directory
         #{site_packages}
 
-      See: https://github.com/mxcl/homebrew/wiki/Homebrew-and-Python
+      See: https://github.com/Homebrew/homebrew/wiki/Homebrew-and-Python
     EOS
   end
 
@@ -262,29 +258,6 @@ class Python < Formula
 end
 
 __END__
-# http://bugs.python.org/issue18071 (Remove this hung for 2.7.6!)
-diff --git a/Lib/_osx_support.py b/Lib/_osx_support.py
---- a/Lib/_osx_support.py
-+++ b/Lib/_osx_support.py
-@@ -53,7 +53,7 @@ def _find_executable(executable, path=No
-
-
- def _read_output(commandstring):
--    """Output from succesful command execution or None"""
-+    """Output from successful command execution or None"""
-     # Similar to os.popen(commandstring, "r").read(),
-     # but without actually using os.popen because that
-     # function is not usable during python bootstrap.
-@@ -68,7 +68,7 @@ def _read_output(commandstring):
-
-     with contextlib.closing(fp) as fp:
-         cmd = "%s 2>/dev/null >'%s'" % (commandstring, fp.name)
--        return fp.read().decode('utf-8').strip() if not os.system(cmd) else None
-+        return fp.read().strip() if not os.system(cmd) else None
-
-
-# X11 header find fix (and let homebrew handle this.)
-
 diff --git a/setup.py b/setup.py
 index 716f08e..66114ef 100644
 --- a/setup.py

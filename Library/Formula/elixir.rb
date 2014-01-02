@@ -26,8 +26,8 @@ end
 
 class Elixir < Formula
   homepage 'http://elixir-lang.org/'
-  url  'https://github.com/elixir-lang/elixir/archive/v0.10.2.tar.gz'
-  sha1 'fd12cfc3d7ebba9087ea1d13de6ad940c644ecf1'
+  url  'https://github.com/elixir-lang/elixir/archive/v0.12.0.zip'
+  sha1 '1f2bf65556b4620fa6dbcadc638d74851f19a212'
 
   head 'https://github.com/elixir-lang/elixir.git'
 
@@ -38,8 +38,8 @@ class Elixir < Formula
     bin.install Dir['bin/*'] - Dir['bin/*.bat']
 
     Dir['lib/*/ebin'].each do |path|
-      app  = File.basename(File.dirname(path))
-      (lib/"#{app}").install path
+      app = File.basename(File.dirname(path))
+      (lib/app).install path
     end
   end
 

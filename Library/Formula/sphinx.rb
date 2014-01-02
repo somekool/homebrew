@@ -1,23 +1,15 @@
 require 'formula'
 
-class Libstemmer < Formula
-  # upstream is constantly changing the tarball,
-  # so doing checksum verification here would require
-  # constant, rapid updates to this formula.
-  head 'http://snowball.tartarus.org/dist/libstemmer_c.tgz'
-  homepage 'http://snowball.tartarus.org/'
-end
-
 class Sphinx < Formula
   homepage 'http://www.sphinxsearch.com'
-  url 'http://sphinxsearch.com/files/sphinx-2.0.9-release.tar.gz'
-  sha1 '0fa2806fa47a689d9f55d72ce0b6d4abce52e81c'
+  url 'http://sphinxsearch.com/files/sphinx-2.1.4-release.tar.gz'
+  sha1 '072e4f813937e2d65145b272494185a73a3bc8e0'
 
   head 'http://sphinxsearch.googlecode.com/svn/trunk/'
 
   devel do
-    url 'http://sphinxsearch.com/files/sphinx-2.1.1-beta.tar.gz'
-    sha1 '2ccbf75146f54338834a6e37250f1af3c73b9746'
+    url 'http://sphinxsearch.com/files/sphinx-2.2.1-beta.tar.gz'
+    sha1 'dccaa7d14f71cec8fe6dfdb059315856c0712885'
   end
 
   option 'mysql', 'Force compiling against MySQL'
@@ -26,6 +18,12 @@ class Sphinx < Formula
 
   depends_on :mysql if build.include? 'mysql'
   depends_on :postgresql if build.include? 'pgsql'
+
+  # http://snowball.tartarus.org/
+  resource 'stemmer' do
+    url 'http://snowball.tartarus.org/dist/libstemmer_c.tgz'
+    sha1 '69056075b9fa1382e07cec6c32c8e82f3f35677b'
+  end
 
   fails_with :llvm do
     build 2334
@@ -38,7 +36,7 @@ class Sphinx < Formula
   end
 
   def install
-    Libstemmer.new.brew { (buildpath/'libstemmer_c').install Dir['*'] }
+    (buildpath/'libstemmer_c').install resource('stemmer')
 
     args = %W[--prefix=#{prefix}
               --disable-dependency-tracking
