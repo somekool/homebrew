@@ -39,17 +39,15 @@ class Wxmac < Formula
     cd "wxPython" do
       ENV.append_to_cflags "-arch #{MacOS.preferred_arch}"
 
-      python do
-        system python, "setup.py",
-                       "build_ext",
-                       "WXPORT=osx_cocoa",
-                       *args
-        system python, "setup.py",
-                       "install",
-                       "--prefix=#{prefix}",
-                       "WXPORT=osx_cocoa",
-                       *args
-      end
+      system "python", "setup.py",
+                     "build_ext",
+                     "WXPORT=osx_cocoa",
+                     *args
+      system "python", "setup.py",
+                     "install",
+                     "--prefix=#{prefix}",
+                     "WXPORT=osx_cocoa",
+                     *args
     end
   end
 
@@ -80,6 +78,10 @@ class Wxmac < Formula
       "--enable-clipboard",
       "--enable-webkit",
       "--enable-svg",
+      "--enable-mediactrl",
+      "--enable-graphics_ctx",
+      "--enable-controls",
+      "--enable-dataviewctrl",
       "--with-expat",
       "--with-macosx-version-min=#{MacOS.version}",
       "--with-macosx-sdk=#{MacOS.sdk_path}",
