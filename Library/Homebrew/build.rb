@@ -61,8 +61,14 @@ class Build
 
   def initialize(f)
     @f = f
-    @deps = expand_deps
-    @reqs = expand_reqs
+
+    if ARGV.ignore_deps?
+      @deps = []
+      @reqs = []
+    else
+      @deps = expand_deps
+      @reqs = expand_reqs
+    end
   end
 
   def post_superenv_hacks
@@ -75,8 +81,9 @@ class Build
 
   def pre_superenv_hacks
     # Allow a formula to opt-in to the std environment.
-    ARGV.unshift '--env=std' if (f.env.std? or deps.any? { |d| d.name == 'scons' }) and
-      not ARGV.include? '--env=super'
+    if (f.env.std? || deps.any? { |d| d.name == "scons" }) && ARGV.env != "super"
+      ARGV.unshift "--env=std"
+    end
   end
 
   def expand_reqs
@@ -113,12 +120,12 @@ class Build
 
     deps.map(&:to_formula).each do |dep|
       opt = HOMEBREW_PREFIX/:opt/dep
-      fixopt(dep) unless opt.directory? or ARGV.ignore_deps?
+      fixopt(dep) unless opt.directory?
     end
 
     if superenv?
-      ENV.keg_only_deps = keg_only_deps.map(&:to_s)
-      ENV.deps = deps.map { |d| d.to_formula.to_s }
+      ENV.keg_only_deps = keg_only_deps.map(&:name)
+      ENV.deps = deps.map { |d| d.to_formula.name }
       ENV.x11 = reqs.any? { |rq| rq.kind_of?(X11Dependency) }
       ENV.setup_build_environment(f)
       post_superenv_hacks
@@ -160,6 +167,8 @@ class Build
         interactive_shell f
       else
         f.prefix.mkpath
+
+        f.resources.each { |r| r.extend(ResourceDebugger) } if ARGV.debug?
 
         begin
           f.install
@@ -204,7 +213,7 @@ end
 
 def fixopt f
   path = if f.linked_keg.directory? and f.linked_keg.symlink?
-    f.linked_keg.realpath
+    f.linked_keg.resolved_path
   elsif f.prefix.directory?
     f.prefix
   elsif (kids = f.rack.children).size == 1 and kids.first.directory?

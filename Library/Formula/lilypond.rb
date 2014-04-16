@@ -2,12 +2,12 @@ require 'formula'
 
 class Lilypond < Formula
   homepage 'http://lilypond.org/'
-  url 'http://download.linuxaudio.org/lilypond/sources/v2.18/lilypond-2.18.0.tar.gz'
-  sha1 '8bf2637b27351b999c535a219fe20407d359910a'
+  url 'http://download.linuxaudio.org/lilypond/sources/v2.18/lilypond-2.18.2.tar.gz'
+  sha1 '09d3a1e0e9fadeb8ef6e279227a2b30812c7ee9b'
 
   devel do
-    url 'http://download.linuxaudio.org/lilypond/source/v2.19/lilypond-2.19.2.tar.gz'
-    sha1 'a5526ecf9d6ceb23855116927fd6b85608924f4c'
+    url 'http://download.linuxaudio.org/lilypond/source/v2.19/lilypond-2.19.4.tar.gz'
+    sha1 '0dc8c449958571377729557dbe20e973a8a10e1d'
   end
 
   # LilyPond currently only builds with an older version of Guile (<1.9)
@@ -46,11 +46,11 @@ class Lilypond < Formula
   depends_on 'flex' => :build
 
   # Assert documentation dependencies if requested.
-  if build.include? 'with-doc'
+  if build.with? "doc"
     depends_on 'netpbm'
     depends_on 'imagemagick'
     depends_on 'docbook'
-    depends_on 'dbtexmf.dblatex' => :python
+    depends_on "dblatex" => [:python, "dbtexmf.dblatex"]
     depends_on :python
     depends_on 'texi2html'
   end
@@ -65,20 +65,20 @@ class Lilypond < Formula
     resource('guile18').stage do
        system "./configure", "--disable-dependency-tracking",
                              "--prefix=#{prefix}",
-                             "--with-libreadline-prefix=#{Formula.factory('readline').opt_prefix}"
+                             "--with-libreadline-prefix=#{Formula["readline"].opt_prefix}"
        system "make", "install"
        # A really messed up workaround required on OS X --mkhl
        lib.cd { Dir["*.dylib"].each {|p| ln_sf p, File.basename(p, ".dylib")+".so" }}
        ENV.prepend_path 'PATH', "#{bin}"
     end
 
-    gs = Formula.factory('ghostscript')
+    gs = Formula["ghostscript"]
 
     args = ["--prefix=#{prefix}",
             "--enable-rpath",
             "--with-ncsb-dir=#{gs.share}/ghostscript/fonts/"]
 
-    args << "--disable-documentation" unless build.include? 'with-doc'
+    args << "--disable-documentation" if build.without? "doc"
     system "./configure", *args
 
     # Separate steps to ensure that lilypond's custom fonts are created.
@@ -86,7 +86,7 @@ class Lilypond < Formula
     system "make install"
 
     # Build documentation if requested.
-    if build.include? 'with-doc'
+    if build.with? "doc"
       system "make doc"
       system "make install-doc"
     end

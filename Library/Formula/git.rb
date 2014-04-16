@@ -1,15 +1,15 @@
 require 'formula'
 
 class Git < Formula
-  homepage 'http://git-scm.com'
-  url 'https://git-core.googlecode.com/files/git-1.8.5.4.tar.gz'
-  sha1 'cbf14318ee9652232489982bb2da15d2e5ebb580'
-  head 'https://github.com/git/git.git'
+  homepage "http://git-scm.com"
+  url "https://www.kernel.org/pub/software/scm/git/git-1.9.2.tar.gz"
+  sha1 "5181808d99ea959951ee55a083de3bce8603436b"
+  head "https://github.com/git/git.git", :shallow => false
 
   bottle do
-    sha1 "9d04e5286a1cc55bc32c29e5813cf44727134c11" => :mavericks
-    sha1 "bf37c73ffa74e4cf6383ae7450f718476d9c874c" => :mountain_lion
-    sha1 "206e244f8c4e6e7c6c181b746c9293543cfe2257" => :lion
+    sha1 "ff18e0627a084d5f26052e9a2ffc186e3021f283" => :mavericks
+    sha1 "e7b9e452a60ea46d6f32d90b0b9e2801b4675cdb" => :mountain_lion
+    sha1 "58aa489119bb688648561305fec0f5bee4e55866" => :lion
   end
 
   option 'with-blk-sha1', 'Compile with the block-optimized SHA1 implementation'
@@ -24,25 +24,14 @@ class Git < Formula
   depends_on 'curl' if build.with? 'brewed-curl'
   depends_on 'go' => :build if build.with? 'persistent-https'
 
-  resource 'man' do
-    url 'http://git-core.googlecode.com/files/git-manpages-1.8.5.4.tar.gz'
-    sha1 '4ee26cf0d2db87b0be21192c4433359b6f38b217'
+  resource "man" do
+    url "https://www.kernel.org/pub/software/scm/git/git-manpages-1.9.2.tar.gz"
+    sha1 "6f0871d02dd9181f59d6c59c3a4d26e2b42fbc0b"
   end
 
-  resource 'html' do
-    url 'http://git-core.googlecode.com/files/git-htmldocs-1.8.5.4.tar.gz'
-    sha1 '6cfb7f23d2a3493d5b7657cc4558ff791294beb0'
-  end
-
-  def patches
-    if MacOS.version >= :mavericks and not build.head?
-      # Allow using PERLLIB_EXTRA to find Subversion Perl bindings location
-      # in the CLT/Xcode. Should be included in Git 1.8.6.
-      # https://git.kernel.org/cgit/git/git.git/commit/?h=next&id=07981d
-      # https://git.kernel.org/cgit/git/git.git/commit/?h=next&id=0386dd
-      ['https://git.kernel.org/cgit/git/git.git/patch/?id=07981d',
-       'https://git.kernel.org/cgit/git/git.git/patch/?id=0386dd']
-    end
+  resource "html" do
+    url "https://www.kernel.org/pub/software/scm/git/git-htmldocs-1.9.2.tar.gz"
+    sha1 "2563dade9a5282f6211740a6327ed13f8ff2df83"
   end
 
   def install
@@ -66,10 +55,12 @@ class Git < Formula
 
     if build.with? 'pcre'
       ENV['USE_LIBPCRE'] = '1'
-      ENV['LIBPCREDIR'] = Formula.factory('pcre').opt_prefix
+      ENV['LIBPCREDIR'] = Formula['pcre'].opt_prefix
     end
 
-    ENV['NO_GETTEXT'] = '1' unless build.with? 'gettext'
+    ENV['NO_GETTEXT'] = '1' if build.without? 'gettext'
+
+    ENV['GIT_DIR'] = cached_download/".git" if build.head?
 
     system "make", "prefix=#{prefix}",
                    "sysconfdir=#{etc}",
@@ -106,7 +97,7 @@ class Git < Formula
       end
     end
 
-    unless build.without? 'completions'
+    if build.with? 'completions'
       # install the completion script first because it is inside 'contrib'
       bash_completion.install 'contrib/completion/git-completion.bash'
       bash_completion.install 'contrib/completion/git-prompt.sh'

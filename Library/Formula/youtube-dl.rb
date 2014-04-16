@@ -2,8 +2,13 @@ require 'formula'
 
 class YoutubeDl < Formula
   homepage 'http://rg3.github.io/youtube-dl/'
-  url 'https://yt-dl.org/downloads/2014.02.10/youtube-dl-2014.02.10.tar.gz'
-  sha1 '84668a44e9864bdae81ec9020b9b817bc2ffd538'
+  # Please only update to versions that are published on PyPi as there are too
+  # many releases for us to update to every single one:
+  # https://pypi.python.org/pypi/youtube_dl
+  url 'https://yt-dl.org/downloads/2014.04.04.7/youtube-dl-2014.04.04.7.tar.gz'
+  sha1 '5f1b62eb5760fe98c0430033db83bb090f5ee9ad'
+
+  depends_on 'rtmpdump' => :optional
 
   def install
     system "make", "youtube-dl", "PREFIX=#{prefix}"
@@ -16,7 +21,7 @@ class YoutubeDl < Formula
     "To use post-processing options, `brew install ffmpeg`."
   end
 
-  def test
+  test do
     system "#{bin}/youtube-dl", '--simulate', 'http://www.youtube.com/watch?v=he2a4xK8ctk'
   end
 end

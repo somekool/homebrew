@@ -3,11 +3,6 @@ require 'formula'
 class Qt5HeadDownloadStrategy < GitDownloadStrategy
   include FileUtils
 
-  def support_depth?
-    # We need to make a local clone so we can't use "--depth 1"
-    false
-  end
-
   def stage
     @clone.cd { reset }
     safe_system 'git', 'clone', @clone, '.'
@@ -22,13 +17,14 @@ class Qt5 < Formula
   url 'http://download.qt-project.org/official_releases/qt/5.2/5.2.1/single/qt-everywhere-opensource-src-5.2.1.tar.gz'
   sha1 '31a5cf175bb94dbde3b52780d3be802cbeb19d65'
   bottle do
-    sha1 "242518522d1cfc33330586a189d005bd674244de" => :mavericks
-    sha1 "f7f6ff607fe69ae4c215167235f3f851717a6584" => :mountain_lion
-    sha1 "53697eeaca97521ed681460c91a046be8969ab26" => :lion
+    revision 2
+    sha1 "6a514fbf56491a64316ef05acdf07ca6526ba458" => :mavericks
+    sha1 "2518707b0ad69462a620fcd5c2e482053a239914" => :mountain_lion
+    sha1 "b2362eb20666b961d1d2acec629e4a581aa2b87a" => :lion
   end
 
   head 'git://gitorious.org/qt/qt5.git', :branch => 'stable',
-    :using => Qt5HeadDownloadStrategy
+    :using => Qt5HeadDownloadStrategy, :shallow => false
 
   keg_only "Qt 5 conflicts Qt 4 (which is currently much more widely used)."
 
@@ -36,12 +32,13 @@ class Qt5 < Formula
   option 'with-docs', 'Build documentation'
   option 'developer', 'Build and link with developer options'
 
+  depends_on "pkg-config" => :build
   depends_on "d-bus" => :optional
   depends_on "mysql" => :optional
 
-  odie 'qt5: --with-qtdbus has been renamed to --with-d-bus' if build.include? 'with-qtdbus'
-  odie 'qt5: --with-demos-examples is no longer supported' if build.include? 'with-demos-examples'
-  odie 'qt5: --with-debug-and-release is no longer supported' if build.include? 'with-debug-and-release'
+  odie 'qt5: --with-qtdbus has been renamed to --with-d-bus' if build.with? "qtdbus"
+  odie 'qt5: --with-demos-examples is no longer supported' if build.with? "demos-examples"
+  odie 'qt5: --with-debug-and-release is no longer supported' if build.with? "debug-and-release"
 
   def install
     # fixed hardcoded link to plugin dir: https://bugreports.qt-project.org/browse/QTBUG-29188
@@ -70,7 +67,7 @@ class Qt5 < Formula
     args << "-plugin-sql-mysql" if build.with? 'mysql'
 
     if build.with? 'd-bus'
-      dbus_opt = Formula.factory('d-bus').opt_prefix
+      dbus_opt = Formula["d-bus"].opt_prefix
       args << "-I#{dbus_opt}/lib/dbus-1.0/include"
       args << "-I#{dbus_opt}/include/dbus-1.0"
       args << "-L#{dbus_opt}/lib"
@@ -98,21 +95,21 @@ class Qt5 < Formula
     end
 
     # Some config scripts will only find Qt in a "Frameworks" folder
-    cd prefix do
-      ln_s lib, frameworks
-    end
+    frameworks.install_symlink Dir["#{lib}/*.framework"]
 
     # The pkg-config files installed suggest that headers can be found in the
     # `include` directory. Make this so by creating symlinks from `include` to
     # the Frameworks' Headers folders.
-    Pathname.glob(lib + '*.framework/Headers').each do |path|
-      framework_name = File.basename(File.dirname(path), '.framework')
-      ln_s path.realpath, include+framework_name
+    Pathname.glob("#{lib}/*.framework/Headers") do |path|
+      include.install_symlink path => path.parent.basename(".framework")
     end
 
-    Pathname.glob(bin + '*.app').each do |path|
-      mv path, prefix
-    end
+    # configure saved the PKG_CONFIG_LIBDIR set up by superenv; remove it
+    # see: https://github.com/Homebrew/homebrew/issues/27184
+    inreplace prefix/"mkspecs/qconfig.pri", /\n\n# pkgconfig/, ""
+    inreplace prefix/"mkspecs/qconfig.pri", /\nPKG_CONFIG_.*=.*$/, ""
+
+    Pathname.glob("#{bin}/*.app") { |app| mv app, prefix }
   end
 
   test do

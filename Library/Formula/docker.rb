@@ -2,31 +2,30 @@ require "formula"
 
 class Docker < Formula
   homepage "http://docker.io"
-  url "https://github.com/dotcloud/docker.git", :tag => "v0.8.0"
-  sha1 "1e9362dab2ac2ecb4a1f193a7e72d060000438c3"
+  url "https://github.com/dotcloud/docker.git", :tag => "v0.10.0"
 
   bottle do
-    revision 1
-    sha1 "d2cdd9ed152a43cf1008a1025a9fefa5b9cb6ed3" => :mavericks
-    sha1 "809bc0bbceb5d8d690f8ac6230ebe2d4ffc5aa9c" => :mountain_lion
-    sha1 "cbef97454f2b063b0345d75c6642d09c9fdb2949" => :lion
+    sha1 "57c927d65003ffa8c399a60fabaf29210ec4850d" => :mavericks
+    sha1 "df39b81c702fd14a4d0715b30245dc43e0090ffe" => :mountain_lion
+    sha1 "7e792f28fbf1b18b6e758ffff81b4b3754533553" => :lion
   end
 
-  def patches
-    "https://github.com/dotcloud/docker/commit/6174ba.patch"
-  end
+  option "without-completions", "Disable bash/zsh completions"
 
   depends_on "go" => :build
 
   def install
-    ENV["DOCKER_GITCOMMIT"] = downloader.cached_location.cd do
-      `git rev-parse HEAD`
-    end
+    ENV["GIT_DIR"] = cached_download/".git"
     ENV["AUTO_GOPATH"] = "1"
-    inreplace "hack/make/dynbinary", "sha1sum", "shasum"
+    ENV["DOCKER_CLIENTONLY"] = "1"
 
     system "hack/make.sh", "dynbinary"
-    bin.install "bundles/0.8.0/dynbinary/docker-0.8.0" => "docker"
+    bin.install "bundles/#{version}/dynbinary/docker-#{version}" => "docker"
+
+    if build.with? "completions"
+      bash_completion.install "contrib/completion/bash/docker"
+      zsh_completion.install "contrib/completion/zsh/_docker"
+    end
   end
 
   test do

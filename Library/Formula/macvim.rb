@@ -107,7 +107,7 @@ class Macvim < Formula
                   %Q[-DDYNAMIC_PYTHON3_DLL=\'\"#{py3_prefix}/Python\"\']
       end
 
-      unless Formula.factory("python").installed?
+      unless Formula["python"].installed?
         inreplace "src/auto/config.h", "/* #undef PY_NO_RTLD_GLOBAL */",
                                         "#define PY_NO_RTLD_GLOBAL 1"
         inreplace "src/auto/config.h", "/* #undef PY3_NO_RTLD_GLOBAL */",
@@ -136,7 +136,7 @@ class Macvim < Formula
     # Create MacVim vimdiff, view, ex equivalents
     executables = %w[mvimdiff mview mvimex gvim gvimdiff gview gvimex]
     executables += %w[vi vim vimdiff view vimex] if build.include? "override-system-vim"
-    executables.each {|f| ln_s bin+'mvim', bin+f}
+    executables.each { |e| bin.install_symlink "mvim" => e }
   end
 
   def caveats

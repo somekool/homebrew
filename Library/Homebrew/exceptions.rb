@@ -39,22 +39,31 @@ class FormulaUnavailableError < RuntimeError
   attr_reader :name
   attr_accessor :dependent
 
+  def initialize name
+    @name = name
+  end
+
   def dependent_s
     "(dependency of #{dependent})" if dependent and dependent != name
   end
 
   def to_s
-    if name =~ HOMEBREW_TAP_FORMULA_REGEX then <<-EOS.undent
-      No available formula for #$3 #{dependent_s}
-      Please tap it and then try again: brew tap #$1/#$2
-      EOS
-    else
-      "No available formula for #{name} #{dependent_s}"
-    end
+    "No available formula for #{name} #{dependent_s}"
   end
+end
+
+class TapFormulaUnavailableError < FormulaUnavailableError
+  attr_reader :user, :repo, :shortname
 
   def initialize name
-    @name = name
+    super
+    @user, @repo, @shortname = name.split("/", 3)
+  end
+
+  def to_s; <<-EOS.undent
+      No available formula for #{shortname} #{dependent_s}
+      Please tap it and then try again: brew tap #{user}/#{repo}
+    EOS
   end
 end
 
@@ -88,15 +97,6 @@ class FormulaAlreadyInstalledError < RuntimeError; end
 class FormulaInstallationAlreadyAttemptedError < Homebrew::InstallationError
   def message
     "Formula installation already attempted: #{formula}"
-  end
-end
-
-class UnsatisfiedDependencyError < Homebrew::InstallationError
-  def initialize(f, dep)
-    super f, <<-EOS.undent
-    #{f} dependency #{dep} not installed with:
-      #{dep.missing_options * ', '}
-    EOS
   end
 end
 
@@ -196,21 +196,21 @@ class BuildError < Homebrew::InstallationError
       unless formula.core_formula?
         ohai "Formula"
         puts "Tap: #{formula.tap}"
-        puts "Path: #{formula.path.realpath}"
+        puts "Path: #{formula.path}"
       end
       ohai "Configuration"
       Homebrew.dump_build_config
       ohai "ENV"
       Homebrew.dump_build_env(env)
       puts
-      onoe "#{formula.name} did not build"
+      onoe "#{formula.name} #{formula.version} did not build"
       unless (logs = Dir["#{HOMEBREW_LOGS}/#{formula}/*"]).empty?
         puts "Logs:"
         puts logs.map{|fn| "     #{fn}"}.join("\n")
       end
     end
     puts
-    unless RUBY_VERSION < "1.8.6" || issues.empty?
+    unless RUBY_VERSION < "1.8.7" || issues.empty?
       puts "These open issues may also help:"
       puts issues.map{ |i| "#{i['title']} (#{i['html_url']})" }.join("\n")
     end
@@ -229,6 +229,16 @@ class CompilerSelectionError < Homebrew::InstallationError
   end
 end
 
+# Raised in Resource.fetch
+class DownloadError < RuntimeError
+  def initialize(resource, e)
+    super <<-EOS.undent
+      Failed to download resource #{resource.download_name.inspect}
+      #{e.message}
+      EOS
+  end
+end
+
 # raised in CurlDownloadStrategy.fetch
 class CurlDownloadStrategyError < RuntimeError; end
 
@@ -240,23 +250,19 @@ class ChecksumMissingError < ArgumentError; end
 
 # raised by Pathname#verify_checksum when verification fails
 class ChecksumMismatchError < RuntimeError
-  attr_accessor :advice
-  attr_reader :expected, :actual, :hash_type
+  attr_reader :expected, :hash_type
 
-  def initialize expected, actual
+  def initialize fn, expected, actual
     @expected = expected
-    @actual = actual
     @hash_type = expected.hash_type.to_s.upcase
 
     super <<-EOS.undent
       #{@hash_type} mismatch
-      Expected: #{@expected}
-      Actual: #{@actual}
+      Expected: #{expected}
+      Actual: #{actual}
+      Archive: #{fn}
+      To retry an incomplete download, remove the file above.
       EOS
-  end
-
-  def to_s
-    super + advice.to_s
   end
 end
 

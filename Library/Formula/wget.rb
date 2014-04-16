@@ -8,6 +8,13 @@ class Wget < Formula
   url 'http://ftpmirror.gnu.org/wget/wget-1.15.tar.gz'
   mirror 'http://ftp.gnu.org/gnu/wget/wget-1.15.tar.gz'
   sha1 'f3c925f19dfe5ed386daae4f339175c108c50574'
+  revision 1
+
+  bottle do
+    sha1 "94ad9a29eb79d8ebc88dfca1008f635da37bfa89" => :mavericks
+    sha1 "7213c042d1d6593031882b652db8920b85fe2e6b" => :mountain_lion
+    sha1 "f2202b23c269d78346ef8d0ccd65f19f287a1dce" => :lion
+  end
 
   head do
     url 'git://git.savannah.gnu.org/wget.git'
@@ -31,7 +38,7 @@ class Wget < Formula
       --prefix=#{prefix}
       --sysconfdir=#{etc}
       --with-ssl=openssl
-      --with-libssl-prefix=#{Formula.factory("openssl").opt_prefix}
+      --with-libssl-prefix=#{Formula["openssl"].opt_prefix}
     ]
 
     args << "--disable-debug" unless build.include? "enable-debug"
@@ -41,7 +48,7 @@ class Wget < Formula
     system "make install"
   end
 
-  def test
+  test do
     system "#{bin}/wget", "-O", "-", "www.google.com"
   end
 end
